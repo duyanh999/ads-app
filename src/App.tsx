@@ -45,6 +45,7 @@ function App() {
   });
   const [value, setValue] = React.useState(0);
   const [isSubmitted, setIsSubmitted] = React.useState(false);
+  const [subCampaigns, setSubCampaigns] = React.useState<SubCampaign[]>([]);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -78,6 +79,100 @@ function App() {
       },
     },
   });
+  const addSubCampaign = () => {
+    const newSubCampaign: SubCampaign = {
+      name: "",
+      status: false,
+      ads: [{ name: "", quantity: 0 }], // Mặc định có một quảng cáo khi tạo mới subCampaign
+    };
+    setSubCampaigns([...subCampaigns, newSubCampaign]);
+  };
+
+  const renderTabInfo = (errors: any, touched: any) => {
+    return (
+      <CustomTabPanel value={value} index={0}>
+        <Field
+          as={TextField}
+          label={
+            <div>
+              Tên chiến dịch
+              <span
+                style={{
+                  color:
+                    isSubmitted && !!errors.name && !!touched.name ? "red" : "",
+                }}
+              >
+                *
+              </span>
+            </div>
+          }
+          name="name"
+          fullWidth
+          id="standard-required"
+          variant="standard"
+          error={isSubmitted && !!errors.name && !!touched.name}
+          helperText={
+            isSubmitted && !!errors.name && !!touched.name
+              ? "Dư liệu không hợp lệ"
+              : ""
+          }
+        />
+        <div className="mt-4">
+          <Field
+            as={TextField}
+            label={<div>Mô tả</div>}
+            name="describe"
+            fullWidth
+            variant="standard"
+          />
+        </div>
+      </CustomTabPanel>
+    );
+  };
+  const renderTabSubCampaigns = (errors: any, touched: any) => {
+    return (
+      <CustomTabPanel value={value} index={1}>
+        <div>
+          <div className="flex gap-4">
+            <div
+              className="w-[5%] rounded-full h-[50px] bg-gray-500 flex items-center justify-center"
+              onClick={addSubCampaign}
+            >
+              {/* Nút để thêm SubCampaign */}
+              Thêm SubCampaign
+            </div>
+            <div className="flex overflow-x-auto gap-3 w-[95%] flex-shrink-0">
+              {/* Hiển thị danh sách các SubCampaign */}
+              {subCampaigns.map((subCampaign, index) => (
+                <div
+                  key={index}
+                  className="bg-white shadow-lg rounded-md mb-1 border w-[220px] h-[120px] flex-shrink-0"
+                >
+                  <h3>SubCampaign {index + 1}</h3>
+                  {/* Các nội dung khác của SubCampaign */}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Field
+            as={TextField}
+            name="quantity"
+            label="Tab 2 Field"
+            fullWidth
+            variant="outlined"
+            type="number"
+            error={isSubmitted && !!errors.quantity && !!touched.quantity}
+            helperText={
+              isSubmitted && !!errors.quantity && !!touched.quantity
+                ? "Dư liệu không hợp lệ"
+                : ""
+            }
+          />
+        </div>
+      </CustomTabPanel>
+    );
+  };
   return (
     <ThemeProvider theme={theme}>
       <div className="App">
@@ -129,67 +224,8 @@ function App() {
                       <Tab label="Chiến Dịch Con" {...a11yProps(1)} />
                     </Tabs>
                   </Box>
-                  <CustomTabPanel value={value} index={0}>
-                    <Field
-                      as={TextField}
-                      label={
-                        <div>
-                          Tên chiến dịch
-                          <span
-                            style={{
-                              color:
-                                isSubmitted && !!errors.name && !!touched.name
-                                  ? "red"
-                                  : "",
-                            }}
-                          >
-                            *
-                          </span>
-                        </div>
-                      }
-                      name="name"
-                      fullWidth
-                      id="standard-required"
-                      variant="standard"
-                      error={isSubmitted && !!errors.name && !!touched.name}
-                      helperText={
-                        isSubmitted && !!errors.name && !!touched.name
-                          ? "Dư liệu không hợp lệ"
-                          : ""
-                      }
-                    />
-                    <div className="mt-4">
-                      {" "}
-                      <Field
-                        as={TextField}
-                        label={<div>Mô tả</div>}
-                        name="describe"
-                        fullWidth
-                        variant="standard"
-                      />
-                    </div>
-                  </CustomTabPanel>
-                  <CustomTabPanel value={value} index={1}>
-                    <div>
-                      <h2>Tab 2</h2>
-                      <Field
-                        as={TextField}
-                        name="quantity"
-                        label="Tab 2 Field"
-                        fullWidth
-                        variant="outlined"
-                        type="number"
-                        error={
-                          isSubmitted && !!errors.quantity && !!touched.quantity
-                        }
-                        helperText={
-                          isSubmitted && !!errors.quantity && !!touched.quantity
-                            ? "Dư liệu không hợp lệ"
-                            : ""
-                        }
-                      />
-                    </div>
-                  </CustomTabPanel>
+                  {renderTabInfo(errors, touched)}
+                  {renderTabSubCampaigns(errors, touched)}
                 </Box>
               </div>
             </Form>
