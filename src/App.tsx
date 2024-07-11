@@ -3,7 +3,7 @@ import * as React from "react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import {
   Button,
@@ -12,6 +12,8 @@ import {
   Divider,
   TextField,
   ThemeProvider,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 
 interface TabPanelProps {
@@ -39,30 +41,32 @@ interface Ad {
   quantity: number;
 }
 
+const validationSchema = Yup.object({
+  name: Yup.string().required("Required"),
+  subCampaigns: Yup.array().of(
+    Yup.object({
+      name: Yup.string().required("Required"),
+      ads: Yup.array().of(
+        Yup.object({
+          name: Yup.string().required("Required"),
+          quantity: Yup.number().required("Required"),
+        })
+      ),
+    })
+  ),
+});
+
 function App() {
-  const validationSchema = Yup.object({
-    name: Yup.string().required("Required"),
-    quantity: Yup.number().required("Required").positive("Must be positive"),
-  });
   const [value, setValue] = React.useState(0);
   const [isSubmitted, setIsSubmitted] = React.useState(false);
-  const [selectedItemIndex, setSelectedItemIndex] = React.useState(0);
-  const [itemCampagin, setItemCampagin] = React.useState<SubCampaign>();
-  console.log("item", itemCampagin);
-  const [inputValue, setInputValue] = React.useState<any>();
-
-  const [subCampaigns, setSubCampaigns] = React.useState<SubCampaign[]>([
-    {
-      name: "",
-      status: false,
-      ads: [{ name: "", quantity: 0 }], // Mặc định có một quảng cáo khi tạo mới subCampaign
-    },
-  ]);
-  // const [subCampaignItem, setSubCampaignItem] = React.useState<SubCampaign>();
+  const [selectedItemIndex, setSelectedItemIndex] = React.useState<
+    number | null
+  >(null);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
   function CustomTabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
 
@@ -85,190 +89,37 @@ function App() {
       "aria-controls": `simple-tabpanel-${index}`,
     };
   }
+
   const theme = createTheme({
     palette: {
       primary: {
-        main: "rgb(64,80,181)", // Đổi thành màu tím (ví dụ)
+        main: "rgb(64,80,181)", // Custom primary color
       },
     },
   });
-  const addSubCampaign = () => {
-    const newSubCampaign = {
-      name: `Chiến dịch con ${subCampaigns?.length + 1}`, // Tên chiến dịch con tự động tăng dần
-      status: false,
-      ads: [{ name: "", quantity: 0 }], // Mặc định có một quảng cáo khi tạo mới subCampaign
-    };
-    const updatedSubCampaigns = [...subCampaigns, newSubCampaign];
-    setSubCampaigns(updatedSubCampaigns);
 
-    // Cập nhật index của item được chọn thành subCampaign mới thêm vào
-    setSelectedItemIndex(updatedSubCampaigns.length - 1);
-  };
-
-  const renderTabInfo = (errors: any, touched: any) => {
-    return (
-      <CustomTabPanel value={value} index={0}>
-        <Field
-          as={TextField}
-          label={
-            <div>
-              Tên chiến dịch
-              <span
-                style={{
-                  color:
-                    isSubmitted && !!errors.name && !!touched.name ? "red" : "",
-                }}
-              >
-                *
-              </span>
-            </div>
-          }
-          name="name"
-          fullWidth
-          id="standard-required"
-          variant="standard"
-          error={isSubmitted && !!errors.name && !!touched.name}
-          helperText={
-            isSubmitted && !!errors.name && !!touched.name
-              ? "Dư liệu không hợp lệ"
-              : ""
-          }
-        />
-        <div className="mt-4">
-          <Field
-            as={TextField}
-            label={<div>Mô tả</div>}
-            name="describe"
-            fullWidth
-            variant="standard"
-          />
-        </div>
-      </CustomTabPanel>
-    );
-  };
-
-  const renderTabSubCampaigns = (errors: any, touched: any) => {
-    const handleSubCampaignNameChange = (
-      event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-      const { value } = event.target;
-
-      setSubCampaigns((prevSubCampaigns) => {
-        const updatedSubCampaigns = [...prevSubCampaigns];
-        updatedSubCampaigns[selectedItemIndex].name = value;
-        return updatedSubCampaigns;
-      });
-    };
-
-    const handleAdQuantityChange = (
-      index: number,
-      event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-      const updatedSubCampaigns = [...subCampaigns];
-      updatedSubCampaigns[selectedItemIndex].ads[index].quantity = parseInt(
-        event.target.value
-      );
-      setSubCampaigns(updatedSubCampaigns);
-    };
-
-    return (
-      <CustomTabPanel value={value} index={1}>
-        <div>
-          <div className="flex gap-4">
-            <div
-              className="w-[5%] rounded-full h-[50px] bg-gray-500 flex items-center justify-center"
-              onClick={addSubCampaign}
-            >
-              Thêm SubCampaign
-            </div>
-            <div className="flex overflow-x-auto gap-4 w-[95%]  flex-shrink-0">
-              {subCampaigns.map((subCampaign, index) => {
-                const isSelected = index === selectedItemIndex;
-
-                return (
-                  <Card
-                    onClick={() => {
-                      setSelectedItemIndex(index);
-                      setItemCampagin(subCampaign);
-                    }}
-                    key={index}
-                    style={{
-                      border: isSelected
-                        ? "2px solid #007bff"
-                        : "1px solid #ccc",
-                    }}
-                    className={`bg-white text-xl justify-center pt-2 flex shadow-lg rounded-md mb-1 border w-[220px] h-[120px] flex-shrink-0`}
-                  >
-                    <div>{subCampaign.name}</div>
-                    <div>
-                      Status: {subCampaign.status ? "Active" : "Inactive"}
-                    </div>
-                    <div>
-                      Ads:
-                      {subCampaign.ads.map((ad, adIndex) => (
-                        <div key={adIndex}>
-                          {ad.name}: {ad.quantity}
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-
-          {itemCampagin && (
-            <div className="mt-4">
-              <input
-                type="text"
-                value={itemCampagin.name}
-                onChange={handleSubCampaignNameChange}
-                className="border rounded-md p-2"
-                placeholder="SubCampaign Name"
-              />
-              <Divider className="mt-2 mb-2" />
-              <div>
-                {itemCampagin.ads.map((ad, index) => (
-                  <input
-                    key={index}
-                    type="number"
-                    value={ad.quantity}
-                    onChange={(event) => handleAdQuantityChange(index, event)}
-                    className="border rounded-md p-2 mt-2"
-                    placeholder={`Ad ${index + 1} Quantity`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </CustomTabPanel>
-    );
-  };
   return (
     <ThemeProvider theme={theme}>
       <div className="App">
         <Formik
-          initialValues={{ name: "", quantity: "", describe: "", name2: "" }}
+          initialValues={{
+            name: "",
+            describe: "",
+            subCampaigns: [
+              {
+                name: "",
+                status: false,
+                ads: [{ name: "", quantity: 0 }],
+              },
+            ],
+          }}
           validationSchema={validationSchema}
           onSubmit={(values, { setSubmitting }) => {
-            // Handle form submission here
-            console.log("vl", values);
-            setInputValue(values);
-            const final = {
-              campaign: {
-                information: {
-                  name: values?.name,
-                  describe: values?.describe,
-                },
-              },
-            };
-
-            console.log("final", final);
+            console.log("Submitted values:", values);
             setSubmitting(false);
           }}
         >
-          {({ errors, touched }) => (
+          {({ values, errors, touched, setFieldValue }) => (
             <Form>
               <div className="mb-3 mt-5 flex justify-end mr-4">
                 <Button
@@ -277,6 +128,8 @@ function App() {
                   color="primary"
                   onClick={() => {
                     setIsSubmitted(true);
+                    console.log("Form errors:", errors);
+                    console.log("Form touched:", touched);
                   }}
                 >
                   Submit
@@ -297,8 +150,189 @@ function App() {
                       <Tab label="Chiến Dịch Con" {...a11yProps(1)} />
                     </Tabs>
                   </Box>
-                  {renderTabInfo(errors, touched)}
-                  {renderTabSubCampaigns(errors, touched)}
+
+                  <CustomTabPanel value={value} index={0}>
+                    <Field
+                      as={TextField}
+                      label={
+                        <div>
+                          Tên chiến dịch
+                          <span
+                            style={{
+                              color:
+                                isSubmitted && !!errors.name && !!touched.name
+                                  ? "red"
+                                  : "",
+                            }}
+                          >
+                            *
+                          </span>
+                        </div>
+                      }
+                      name="name"
+                      fullWidth
+                      id="standard-required"
+                      variant="standard"
+                      error={isSubmitted && !!errors.name && !!touched.name}
+                      helperText={
+                        isSubmitted && !!errors.name && !!touched.name
+                          ? "Dữ liệu không hợp lệ"
+                          : ""
+                      }
+                    />
+                    <div className="mt-4">
+                      <Field
+                        as={TextField}
+                        label={<div>Mô tả</div>}
+                        name="describe"
+                        fullWidth
+                        variant="standard"
+                      />
+                    </div>
+                  </CustomTabPanel>
+
+                  <CustomTabPanel value={value} index={1}>
+                    <FieldArray name="subCampaigns">
+                      {({ push: pushSubCampaign }) => (
+                        <div>
+                          <div className="flex gap-4 mb-4">
+                            <div
+                              className="w-[5%] rounded-full h-[50px] bg-gray-500 flex items-center justify-center cursor-pointer"
+                              onClick={() =>
+                                pushSubCampaign({
+                                  name: "",
+                                  status: false,
+                                  ads: [{ name: "", quantity: 0 }],
+                                })
+                              }
+                            >
+                              +
+                            </div>
+                            <div className="flex overflow-x-auto gap-4 w-[95%] flex-shrink-0">
+                              {values.subCampaigns.map(
+                                (subCampaign: any, index) => (
+                                  <Card
+                                    key={index}
+                                    onClick={() => setSelectedItemIndex(index)}
+                                    style={{
+                                      border:
+                                        selectedItemIndex === index
+                                          ? "2px solid #007bff"
+                                          : "1px solid #ccc",
+                                    }}
+                                    className="bg-white text-xl justify-center pt-4 flex shadow-lg rounded-md mb-1 border w-[220px] h-[120px] flex-shrink-0"
+                                  >
+                                    <div>
+                                      <div>
+                                        {subCampaign?.name ||
+                                          "Chiến dịch con " + index}
+                                      </div>
+                                      {subCampaign.ads.map(
+                                        (ad: any, adIndex: any) => (
+                                          <div key={adIndex}>{ad.quantity}</div>
+                                        )
+                                      )}
+                                      <ErrorMessage
+                                        name={`subCampaigns[${index}].name`}
+                                        component="div"
+                                      />
+                                    </div>
+                                  </Card>
+                                )
+                              )}
+                            </div>
+                          </div>
+
+                          {selectedItemIndex !== null && (
+                            <>
+                              <div className="flex">
+                                <Field
+                                  as={TextField}
+                                  label="Tên chiến dịch con"
+                                  name={`subCampaigns[${selectedItemIndex}].name`}
+                                  fullWidth
+                                  required
+                                  variant="standard"
+                                />
+                                <FormControlLabel
+                                  control={
+                                    <Field
+                                      as={Switch}
+                                      name={`subCampaigns[${selectedItemIndex}].status`}
+                                      type="checkbox"
+                                      checked={
+                                        values.subCampaigns[selectedItemIndex]
+                                          .status
+                                      }
+                                      color="primary"
+                                    />
+                                  }
+                                  label="Status"
+                                />
+                              </div>
+                              <div className="mt-10">
+                                <div className="text-2xl flex justify-start">
+                                  Danh sách quảng cáo
+                                </div>
+                                <FieldArray
+                                  name={`subCampaigns[${selectedItemIndex}].ads`}
+                                >
+                                  {({ push: pushAd, remove: removeAd }) => (
+                                    <div className="">
+                                      <Button
+                                        className="w-[5%] rounded-full h-[50px] bg-gray-500 flex items-center justify-start cursor-pointer mb-4"
+                                        onClick={() =>
+                                          pushAd({
+                                            name: "",
+                                            quantity: 0,
+                                          })
+                                        }
+                                      >
+                                        <div className="w-full  rounded-full h-[50px] bg-gray-500 flex items-center justify-center cursor-pointer mb-4">
+                                          +
+                                        </div>
+                                      </Button>
+                                      {values.subCampaigns[
+                                        selectedItemIndex
+                                      ].ads.map((ad: Ad, adIndex: number) => (
+                                        <div
+                                          key={adIndex}
+                                          className="flex gap-4 mb-4 items-center"
+                                        >
+                                          <Field
+                                            as={TextField}
+                                            name={`subCampaigns[${selectedItemIndex}].ads[${adIndex}].name`}
+                                            label="Tên"
+                                            fullWidth
+                                            variant="standard"
+                                          />
+                                          <Field
+                                            as={TextField}
+                                            name={`subCampaigns[${selectedItemIndex}].ads[${adIndex}].quantity`}
+                                            label="Số lượng"
+                                            fullWidth
+                                            variant="standard"
+                                            type="number"
+                                          />
+                                          <Button
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={() => removeAd(adIndex)}
+                                          >
+                                            Xóa
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </FieldArray>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </FieldArray>
+                  </CustomTabPanel>
                 </Box>
               </div>
             </Form>
