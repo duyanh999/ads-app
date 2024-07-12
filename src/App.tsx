@@ -22,22 +22,10 @@ import {
   FormControlLabel,
   Checkbox,
   IconButton,
-  Modal,
-  Typography,
 } from "@mui/material";
 import SubCampaignCard from "./components/SubCampaignCard";
 import ListAds from "./components/ListAds";
-const style = {
-  position: "absolute" as "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -89,47 +77,9 @@ function App() {
     number | null
   >(null);
   const [selectedAds, setSelectedAds] = React.useState<number[]>([]);
-  const [selectAll, setSelectAll] = React.useState<boolean>(false);
-  const [open, setOpen] = React.useState(false);
-  // const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+
   const isSubCampaignInvalid = (errors: any, index: number) => {
     return isSubmitted && errors.subCampaigns?.[index];
-  };
-
-  const handleAdCheckboxChange = (adIndex: number): void => {
-    setSelectedAds((prevSelectedAds) =>
-      prevSelectedAds.includes(adIndex)
-        ? prevSelectedAds.filter((index) => index !== adIndex)
-        : [...prevSelectedAds, adIndex]
-    );
-  };
-
-  const handleDeleteSelectedAds = (removeAd: (index: number) => void) => {
-    if (selectedItemIndex !== null) {
-      for (let i = 0; i < selectedAds.length; i++) {
-        removeAd(selectedAds[i]);
-      }
-    }
-  };
-
-  const handleDeleteAd = (
-    adIndex: number,
-    removeAd: (index: number) => void
-  ) => {
-    removeAd(adIndex);
-    setSelectedAds((prevSelectedAds) =>
-      prevSelectedAds.filter((index) => index !== adIndex)
-    );
-  };
-
-  const handleSelectAllChange = (ads: Ad[]): void => {
-    if (selectAll) {
-      setSelectedAds([]);
-    } else {
-      setSelectedAds(ads.map((_, index) => index));
-    }
-    setSelectAll(!selectAll);
   };
 
   const handleChange = (
@@ -359,7 +309,7 @@ function App() {
           validationSchema={validationSchema}
           onSubmit={(values: Campaign, { setSubmitting }): void => {
             setSubmitting(false);
-            values && setOpen(true);
+            alert(JSON.stringify(values));
           }}
         >
           {({ values, errors }): JSX.Element => (
@@ -400,33 +350,6 @@ function App() {
                   </Box>
                 </div>
               </Form>
-              <Modal
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-              >
-                <Box sx={style}>
-                  <Typography
-                    id="modal-modal-title"
-                    variant="h6"
-                    component="h2"
-                  >
-                    Tên chiến dịch {values?.name}
-                  </Typography>
-                  <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                    Mô tả {values?.describe}
-                  </Typography>
-                  {values?.subCampaigns?.map((item) => {
-                    return (
-                      <>
-                        {item?.name}
-                        {item?.status}
-                      </>
-                    );
-                  })}
-                </Box>
-              </Modal>
             </>
           )}
         </Formik>
