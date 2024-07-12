@@ -76,8 +76,12 @@ function App() {
     return isSubmitted && errors.subCampaigns?.[index];
   };
 
-  const handleAdCheckboxChange = (adIndex: number) => {
-    setSelectedAds((prevSelectedAds) => [...prevSelectedAds, adIndex]);
+  const handleAdCheckboxChange = (adIndex: number): void => {
+    setSelectedAds((prevSelectedAds) =>
+      prevSelectedAds.includes(adIndex)
+        ? prevSelectedAds.filter((index) => index !== adIndex)
+        : [...prevSelectedAds, adIndex]
+    );
   };
 
   const handleDeleteSelectedAds = (removeAd: (index: number) => void) => {
