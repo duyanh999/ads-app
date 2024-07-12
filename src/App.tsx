@@ -148,8 +148,7 @@ function App() {
   const renderListCardCampagins = (
     pushSubCampaign: any,
     values: any,
-    errors: any,
-    touched: any
+    errors: any
   ) => {
     return (
       <div className="flex gap-4 mb-4">
@@ -236,18 +235,30 @@ function App() {
         <FieldArray name="subCampaigns">
           {({ push: pushSubCampaign }): JSX.Element => (
             <div>
-              {renderListCardCampagins(
-                pushSubCampaign,
-                values,
-                errors,
-                touched
-              )}
+              {renderListCardCampagins(pushSubCampaign, values, errors)}
               {selectedItemIndex !== null && (
                 <>
                   <div className="flex justify-between px-3">
                     <Field
                       as={TextField}
-                      label="Tên chiến dịch con"
+                      label={
+                        <div>
+                          Tên chiến dịch con
+                          <span
+                            style={{
+                              color:
+                                isSubmitted &&
+                                (errors as any)?.subCampaigns?.[
+                                  selectedItemIndex
+                                ]?.name
+                                  ? "red"
+                                  : "",
+                            }}
+                          >
+                            *
+                          </span>
+                        </div>
+                      }
                       name={`subCampaigns[${selectedItemIndex}].name`}
                       className="w-[60%]"
                       error={
