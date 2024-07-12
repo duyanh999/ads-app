@@ -11,7 +11,6 @@ import {
   FormikErrors,
   FieldArrayRenderProps,
 } from "formik";
-import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import * as Yup from "yup";
 import {
@@ -23,9 +22,22 @@ import {
   FormControlLabel,
   Checkbox,
   IconButton,
+  Modal,
+  Typography,
 } from "@mui/material";
 import SubCampaignCard from "./components/SubCampaignCard";
-
+import ListAds from "./components/ListAds";
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  border: "2px solid #000",
+  boxShadow: 24,
+  p: 4,
+};
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -78,7 +90,9 @@ function App() {
   >(null);
   const [selectedAds, setSelectedAds] = React.useState<number[]>([]);
   const [selectAll, setSelectAll] = React.useState<boolean>(false);
-
+  const [open, setOpen] = React.useState(false);
+  // const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const isSubCampaignInvalid = (errors: any, index: number) => {
     return isSubmitted && errors.subCampaigns?.[index];
   };
@@ -295,157 +309,6 @@ function App() {
     );
   };
 
-  const renderListAds = (values: Campaign, errors: FormikErrors<Campaign>) => {
-    return (
-      selectedItemIndex !== null && (
-        <div className="mt-10">
-          <div className="text-xl mb-7 px-3 flex justify-start">
-            DANH SÁCH QUẢNG CÁO
-          </div>
-
-          <FieldArray name={`subCampaigns[${selectedItemIndex}].ads`}>
-            {({ push: pushAd, remove: removeAd }): JSX.Element => (
-              <div>
-                <div className="flex gap-4 w-full justify-between items-center mb-4">
-                  <div>
-                    <Checkbox
-                      checked={selectedAds.length > 0}
-                      indeterminate={
-                        selectedAds.length > 0 &&
-                        selectedAds.length <
-                          values.subCampaigns[selectedItemIndex].ads.length
-                      }
-                      onChange={(): void =>
-                        handleSelectAllChange(
-                          values.subCampaigns[selectedItemIndex].ads
-                        )
-                      }
-                    />
-                  </div>
-                  {selectedAds.length > 0 ? (
-                    selectAll ? (
-                      <IconButton
-                        className="absolute right-[43.5%]"
-                        style={{ color: "#757575" }}
-                        onClick={(): void => {
-                          selectedAds.forEach((adIndex) =>
-                            handleDeleteSelectedAds(removeAd)
-                          );
-                          setSelectedAds([]);
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    ) : (
-                      <IconButton
-                        className="absolute right-[43.5%]"
-                        style={{ color: "#757575" }}
-                        onClick={(): void => {
-                          for (let i = 0; i < selectedAds.length; i++) {
-                            removeAd(selectedAds[i]);
-                          }
-                          setSelectedAds([]);
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    )
-                  ) : (
-                    <>
-                      <div className="absolute left-[6.5%]">
-                        <div>Tên quảng cáo*</div>
-                      </div>
-                      <div className="absolute left-[40%]">
-                        <div>Số lượng*</div>
-                      </div>
-                    </>
-                  )}
-
-                  <Button
-                    className="w-[6.5%] rounded-full bg-gray-500 flex items-center cursor-pointer"
-                    variant="outlined"
-                    onClick={(): void =>
-                      pushAd({
-                        name: "",
-                        quantity: 0,
-                      })
-                    }
-                  >
-                    <div className="flex justify-between gap-2 items-center">
-                      <AddIcon fontSize="small" />
-                      <div>Thêm</div>
-                    </div>
-                  </Button>
-                </div>
-                <Divider />
-                {values.subCampaigns[selectedItemIndex].ads.map(
-                  (ad: Ad, adIndex: number) => (
-                    <div
-                      key={adIndex}
-                      className={` ${
-                        selectedAds.includes(adIndex)
-                          ? "bg-pink-100"
-                          : "hover:bg-neutral-100"
-                      }`}
-                    >
-                      <div className={`flex gap-4 mb-4 `}>
-                        <Checkbox
-                          checked={selectedAds.includes(adIndex)}
-                          onChange={(): void => handleAdCheckboxChange(adIndex)}
-                          color="primary"
-                        />
-                        <Field
-                          as={TextField}
-                          name={`subCampaigns[${selectedItemIndex}].ads[${adIndex}].name`}
-                          label={`Tên quảng cáo`}
-                          className={"w-[60%]"}
-                          variant="standard"
-                          error={
-                            isSubmitted &&
-                            !!(
-                              (errors.subCampaigns as any)?.[selectedItemIndex]
-                                ?.ads as any
-                            )?.[adIndex]?.name
-                          }
-                        />
-                        <Field
-                          as={TextField}
-                          name={`subCampaigns[${selectedItemIndex}].ads[${adIndex}].quantity`}
-                          label="Số lượng"
-                          className={"w-40%]"}
-                          fullWidth
-                          variant="standard"
-                          error={
-                            isSubmitted &&
-                            !!(
-                              (errors.subCampaigns as any)?.[selectedItemIndex!]
-                                ?.ads as any
-                            )?.[adIndex]?.quantity
-                          }
-                          type="number"
-                        />
-
-                        <IconButton
-                          style={{ color: "#757575" }}
-                          onClick={(): void =>
-                            handleDeleteAd(adIndex, removeAd)
-                          }
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </div>
-                      <Divider className="" />
-                    </div>
-                  )
-                )}
-              </div>
-            )}
-          </FieldArray>
-        </div>
-      )
-    );
-  };
-
   const renderTabCampaign = (
     values: Campaign,
     errors: FormikErrors<Campaign>
@@ -459,7 +322,16 @@ function App() {
               {selectedItemIndex !== null && (
                 <>
                   {renderDetailCampaign(values, errors)}
-                  {renderListAds(values, errors)}
+                  <ListAds
+                    key={selectedItemIndex}
+                    errors={errors}
+                    isSubmitted={isSubmitted}
+                    selectedAds={selectedAds}
+                    selectedItemIndex={selectedItemIndex}
+                    setSelectedAds={setSelectedAds}
+                    values={values}
+                  />
+                  ;
                 </>
               )}
             </div>
@@ -487,46 +359,75 @@ function App() {
           validationSchema={validationSchema}
           onSubmit={(values: Campaign, { setSubmitting }): void => {
             setSubmitting(false);
-            alert(JSON.stringify(values));
+            values && setOpen(true);
           }}
         >
-          {({ values, errors, touched }): JSX.Element => (
-            <Form>
-              <div className="mb-3 mt-5 flex justify-end mr-4">
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  onClick={(): void => {
-                    setIsSubmitted(true);
-                    Object.keys(errors).length &&
-                      alert("Vui lòng điền đúng và đầy đủ thông tin");
-                  }}
-                >
-                  Submit
-                </Button>
-              </div>
+          {({ values, errors }): JSX.Element => (
+            <>
+              <Form>
+                <div className="mb-3 mt-5 flex justify-end mr-4">
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    onClick={(): void => {
+                      setIsSubmitted(true);
+                      Object.keys(errors).length &&
+                        alert("Vui lòng điền đúng và đầy đủ thông tin");
+                    }}
+                  >
+                    Submit
+                  </Button>
+                </div>
 
-              <Divider className="bg-black" />
+                <Divider className="bg-black" />
 
-              <div className="m-5 shadow-lg rounded-md border">
-                <Box sx={{ width: "100%" }}>
-                  <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-                    <Tabs
-                      value={value}
-                      onChange={handleChange}
-                      aria-label="basic tabs example"
-                    >
-                      <Tab label="Thông tin" {...a11yProps(0)} />
-                      <Tab label="Chiến Dịch Con" {...a11yProps(1)} />
-                    </Tabs>
+                <div className="m-5 shadow-lg rounded-md border">
+                  <Box sx={{ width: "100%" }}>
+                    <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+                      <Tabs
+                        value={value}
+                        onChange={handleChange}
+                        aria-label="basic tabs example"
+                      >
+                        <Tab label="Thông tin" {...a11yProps(0)} />
+                        <Tab label="Chiến Dịch Con" {...a11yProps(1)} />
+                      </Tabs>
+                    </Box>
+
+                    {renderTabInfo(errors)}
+                    {renderTabCampaign(values, errors)}
                   </Box>
-
-                  {renderTabInfo(errors)}
-                  {renderTabCampaign(values, errors)}
+                </div>
+              </Form>
+              <Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+              >
+                <Box sx={style}>
+                  <Typography
+                    id="modal-modal-title"
+                    variant="h6"
+                    component="h2"
+                  >
+                    Tên chiến dịch {values?.name}
+                  </Typography>
+                  <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+                    Mô tả {values?.describe}
+                  </Typography>
+                  {values?.subCampaigns?.map((item) => {
+                    return (
+                      <>
+                        {item?.name}
+                        {item?.status}
+                      </>
+                    );
+                  })}
                 </Box>
-              </div>
-            </Form>
+              </Modal>
+            </>
           )}
         </Formik>
       </div>
