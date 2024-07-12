@@ -475,7 +475,7 @@ function App() {
           validationSchema={validationSchema}
           onSubmit={(values: Campaign, { setSubmitting }): void => {
             setSubmitting(false);
-            alert(JSON.stringify(values, null, 2));
+            alert(JSON.stringify(values));
           }}
         >
           {({ values, errors, touched }): JSX.Element => (
