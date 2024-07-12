@@ -80,6 +80,15 @@ const ListAds: React.FC<ListAdsProps> = ({
     );
   };
 
+  React.useEffect(() => {
+    const allAdsLength = values.subCampaigns[selectedItemIndex!].ads.length;
+    if (selectedAds.length === allAdsLength) {
+      setSelectAll(true);
+    } else if (selectedAds.length === 0) {
+      setSelectAll(false);
+    }
+  }, [selectedAds, selectedItemIndex, values.subCampaigns]);
+
   return (
     <div className="mt-10">
       <div className="text-xl mb-7 px-3 flex justify-start">
@@ -95,7 +104,7 @@ const ListAds: React.FC<ListAdsProps> = ({
             <div className="flex gap-4 w-full justify-between items-center mb-4">
               <div>
                 <Checkbox
-                  checked={selectedAds.length > 0}
+                  checked={selectedAds.length > 0 && selectAll}
                   indeterminate={
                     selectedAds.length > 0 &&
                     selectedAds.length <
@@ -109,23 +118,13 @@ const ListAds: React.FC<ListAdsProps> = ({
                 />
               </div>
               {selectedAds.length > 0 ? (
-                selectAll ? (
-                  <IconButton
-                    className="absolute right-[43.5%]"
-                    style={{ color: "#757575" }}
-                    onClick={(): void => handleDeleteSelectedAds(removeAd)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                ) : (
-                  <IconButton
-                    className="absolute right-[43.5%]"
-                    style={{ color: "#757575" }}
-                    onClick={(): void => handleDeleteSelectedAds(removeAd)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                )
+                <IconButton
+                  className="absolute right-[43.5%]"
+                  style={{ color: "#757575" }}
+                  onClick={(): void => handleDeleteSelectedAds(removeAd)}
+                >
+                  <DeleteIcon />
+                </IconButton>
               ) : (
                 <>
                   <div className="absolute left-[6.5%]">
