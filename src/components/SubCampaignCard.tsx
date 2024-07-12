@@ -1,4 +1,4 @@
-import { Card } from "@mui/material";
+import { Card, Tooltip } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 interface Ad {
@@ -11,6 +11,7 @@ interface SubCampaign {
   status: boolean;
   ads: Ad[];
 }
+
 interface SubCampaignCardProps {
   subCampaign: SubCampaign;
   index: number;
@@ -35,9 +36,14 @@ const SubCampaignCard: React.FC<SubCampaignCardProps> = ({
   >
     <div>
       <div className="flex gap-2">
-        <div style={{ color: isInvalid ? "#FF0000" : "black" }}>
-          {subCampaign.name || `Chiến dịch con ${index + 1}`}
-        </div>
+        <Tooltip title={subCampaign.name} arrow placement="top">
+          <div
+            style={{ color: isInvalid ? "#FF0000" : "black" }}
+            className="line-clamp-1 w-[180px]"
+          >
+            {subCampaign.name || `Chiến dịch con ${index + 1}`}
+          </div>
+        </Tooltip>
         <div>
           {subCampaign.status ? (
             <CheckCircleIcon
